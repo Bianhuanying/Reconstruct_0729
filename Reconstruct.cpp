@@ -255,19 +255,51 @@ getchar(); 	*/
 		}
 	}
 
-std::cout << "Press ENTER to continue or CTRL+C to stop ..."<<" h_ele = "<<h_ele<<std::endl;
+//std::cout << "Press ENTER to continue or CTRL+C to stop ..."<<" h_ele = "<<h_ele<<std::endl;
 
 // 	Mesh<DIM,DIM>& mesh = fixed_mesh;
-  	u_int n_ele = fixed_mesh.n_geometry(DIM);
 
 	int n_dof_ = fem_space->n_dof();
 
+	for (u_int j = 0;j < n_dof_;j ++) {//对该mesh上所有的dof遍历
+		const std::vector<u_int>& rp = reconstruct_patch[j];
+			//the elements are the neighborhood of j. j与自由度的编号一一对应吗？？？？？？？？
+		int N_patch_ele = rp.size();
+		for(int l = 0; l < N_patch_ele; ++ l)
+		{
+			Element<double, DIM>& ele1 = fem_space->element(reconstruct_patch[j][l]);
+			const std::vector<int>& ele1_dof = ele1.dof();
+			int n_ele1_dof = ele1_dof.size();
+
+			for(u_int k = 0;k < n_ele1_dof;++ k)//想找到自由度所对应的坐标，以便求出基函数的导数值
+			{
+				const int& dof = ele1_dof[k];
+  				const AFEPack::Point<DIM>& interp_point = fem_space->dofInfo(dof).interp_point;/// 自由度dof的坐标
+				std::vector<double> basis_grade_ = ele1.basis_function_gradient(k,interp_point); //j=element_dof[k],A(i,j)
+			//			std::vector<value_t> basis_function_gradient(int i, const Point<DOW>&) const; < Gradient of certain basis function at a point. i= 0,1,2 线性元的基函数不连续，只有在特定单元上有定义，所以无法识别全局自由度的编号
+
+				stiff_A[j][ele1_dof[k]] += weight_patch[j]*basis_grade_[0];
+				stiff_B[j][ele1_dof[k]] += weight_patch[j]*basis_grade_[1];
+				
+//				std::cout <<"j = "<<j<< "ele1_dof[k] = "<< ele1_dof[k]<<" weight_patch[j] "<< weight_patch[j] <<  "  basis_grade_[0] =  "<< basis_grade_[0] << " basis_grade_[1] = "<< basis_grade_[1] << "stiff_A[j][ele1_dof[k]] = "<< stiff_A[j][ele1_dof[k]]<< "stiff_B[j][ele1_dof[k]] = "<< stiff_B[j][ele1_dof[k]] << "Press ENTER to continue or CTRL+C to stop ..." << std::flush;
+//		    getchar();
+				
+
+			}	
+		}
+	}
+
+
+
+
+/*
+	 	u_int n_ele = fixed_mesh.n_geometry(DIM);
 	for (u_int i = 0;i < n_ele;i ++) {//对所有的单元做遍历
 		GeometryBM& ele = fixed_mesh.geometry(DIM, i);
 		const std::vector<int>& vtx = ele.vertex();
 		u_int n_vtx = vtx.size();
 
-		std::cout << "2 Press ENTER to continue or CTRL+C to stop ..."<<std::endl;
+//		std::cout << "2 Press ENTER to continue or CTRL+C to stop ..."<<std::endl;
 
 
 		for (u_int j = 0;j < n_vtx;j ++) {//对该单元上所有的节点遍历
@@ -276,7 +308,7 @@ std::cout << "Press ENTER to continue or CTRL+C to stop ..."<<" h_ele = "<<h_ele
 			//the elements are the neighborhood of vtx[j]. vtx[j]与自由度的编号一一对应吗？？？？？？？？
 			int N_patch_ele = rp.size();
 				
-				std::cout << "N_patch_ele ="<<  N_patch_ele <<" j = "<< j <<" vtx[j] = "<< vtx[j]<<std::endl;
+//				std::cout << "N_patch_ele ="<<  N_patch_ele <<" j = "<< j <<" vtx[j] = "<< vtx[j]<<std::endl;
 			//	std::cout << "Press ENTER to continue or CTRL+C to stop ..." << std::flush;
 			 //   getchar();
 			    
@@ -297,16 +329,24 @@ std::cout << "Press ENTER to continue or CTRL+C to stop ..."<<" h_ele = "<<h_ele
 				stiff_A[vtx[j]][ele1_dof[k]] += weight_patch[vtx[j]]*basis_grade_[0];
 				stiff_B[vtx[j]][ele1_dof[k]] += weight_patch[vtx[j]]*basis_grade_[1];
 					
-				/*	std::cout << "vtx[j] patch l ele k_dof of l"<<" k = "<< k<< "l n_ele1_dof = " << n_ele1_dof <<"vtx[j] = "<<vtx[j]<<"N_patch_ele[i]= "<< N_patch_ele<< "l =  "<< l <<std::endl;
-
-					std::cout << "ele1_dof[k] = "<< ele1_dof[k]<<" k = "<< k <<std::endl;
-					std::cout << "stiff_A[vtx[j]][ele1_dof[k]] = "<< stiff_A[vtx[j]][ele1_dof[k]] <<std::endl;
-					*/	
+					std::cout <<"vtx[j] = "<<vtx[j]<< "ele1_dof[k] = "<< ele1_dof[k]<<" weight_patch[vtx[j]] "<< weight_patch[vtx[j]] <<  "  basis_grade_[0] =  "<< basis_grade_[0] << " basis_grade_[1] = "<< basis_grade_[1] << "stiff_A[vtx[j]][ele1_dof[k]] = "<< stiff_A[vtx[j]][ele1_dof[k]]<< "stiff_B[vtx[j]][ele1_dof[k]] = "<< stiff_B[vtx[j]][ele1_dof[k]] << "Press ENTER to continue or CTRL+C to stop ..." << std::flush;
+			    getchar();
+					
 
 				}
 			}
 		}
 	}
+*/
+/////////////////////////////////////is stiff_A,stiff_B wright??????? 
+for(u_int i = 0;i < n_total_dof;++ i){
+	  	for(u_int j = 0;j < n_total_dof;++ j){
+			std::cout << "i = "<<i<<" j = "<< j<<  "stiff_A[i][j] = "<<stiff_A[i][j]<<  "stiff_B[i][j] = "<<stiff_B[i][j] <<std::endl;
+	  	}
+	}
+/////////////////////////////////////is stiff_A,stiff_B wright??????? 
+
+
 
 	for(u_int i = 0;i < n_total_dof;++ i){
 	  	for(u_int j = 0;j < n_total_dof;++ j){
@@ -329,6 +369,8 @@ std::cout << "Press ENTER to continue or CTRL+C to stop ..."<<" h_ele = "<<h_ele
 
 	A.equ(1,stiff_P,1,stiff_Q,1,stiff_S);//A=1*stiff_P+1*stiff_Q+1*stiff_S=CPA+CQB+DSA
 	A.equ(1,A,1,stiff_T);//A=1*A+1*stiff_T=CPA+CQB+DSA+DTB
+
+
 
 //////////////////////////////////////////////////////
 /// 下面手工处理边界条件。NBC
