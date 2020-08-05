@@ -40,16 +40,22 @@ void Reconstruct::buildReconstructPatch()
 
  // std::vector<std::list<u_int> > ele_of_pnt(n_pnt); // 记录与每个点相交的所在的单元集合
  // std::vector<std::vector<u_int> > reconstruct_patch;//defined in ".h"
-	int n_dof_ = fem_space->n_dof();
-	reconstruct_patch.resize(n_dof_);//n_dof_ = n_pnt
+//	int n_dof_ = fem_space->n_dof();
+	reconstruct_patch.resize(n_pnt);//n_dof_ = n_pnt
 
   for (u_int i = 0;i < n_ele;i ++) {
     GeometryBM& ele = mesh.geometry(DIM, i);
+	Element<double, DIM>& ele_ =  fem_space->element(i);
     const std::vector<int>& vtx = ele.vertex();
     u_int n_vtx = vtx.size();
 
+const std::vector<int>& ele_dof = ele_.dof();
+
     for (u_int j = 0;j < n_vtx;j ++) {
       reconstruct_patch[vtx[j]].push_back(i);
+
+if(vtx[j] != ele_dof[j])
+std::cout << "vtx[j] = "<<vtx[j]<<" ele_dof[j] = "<< ele_dof[j] << " j = "<<j<<std::endl;
 
     /*
     int k_ = reconstruct_patch[vtx[j]].size();
@@ -78,6 +84,27 @@ void Reconstruct::buildReconstructPatch()
     int n_patch_ele = reconstruct_patch[j_].size();
     weight_patch[j_] = 1.0/n_patch_ele;
   }
+
+
+///////检测单元片，及单元和自由度的关系
+
+	for (u_int j = 0;j < n_pnt;j ++) {//对该mesh上所有的dof遍历
+		const std::vector<u_int>& rp = reconstruct_patch[j];
+			//the elements are the neighborhood of j. j与自由度的编号一一对应吗？？？？？？？？
+		int N_patch_ele = rp.size();
+		for(int l = 0; l < N_patch_ele; ++ l)
+		{
+			Element<double, DIM>& ele1 = fem_space->element(reconstruct_patch[j][l]);
+			const std::vector<int>& ele1_dof = ele1.dof();
+			int ele1_index = ele1.index();
+				
+			std::cout <<"j = "<<j <<"l = "<< l <<" ele1_index = "<< ele1_index << "ele1_dof[0] = "<< ele1_dof[0]<< "ele1_dof[1] = "<< ele1_dof[1]<< "ele1_dof[2] = "<< ele1_dof[2]<<" weight_patch[j] "<< weight_patch[j] << "Press ENTER to continue or CTRL+C to stop ..." << std::flush;
+		    getchar();
+				
+		}
+	}
+
+///////检测单元片，及单元和自由度的关系
 
 }
 
