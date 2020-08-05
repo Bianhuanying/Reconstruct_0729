@@ -50,8 +50,8 @@ private:
 	std::vector<TemplateElement<double,DIM,DIM> > template_element;
 	FEMSpace<double,DIM> *fem_space;
 
-//	Mesh<DIM,DIM> fixed_mesh;
-	EasyMesh fixed_mesh;
+	Mesh<DIM,DIM> fixed_mesh;
+//	EasyMesh fixed_mesh;
 	std::string mesh_file;
 
 	BoundaryFunction<double,DIM> boundary;
